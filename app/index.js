@@ -17,9 +17,4 @@ export default angular.module('index', [uirouter, env, core, chat, photos, setti
   .config(['$locationProvider', $locationProvider => $locationProvider.hashPrefix('')])
   .config(['$urlRouterProvider', $urlRouterProvider => $urlRouterProvider.otherwise($injector => $injector.get('$state').go('core.chat'))])
   .run(['$rootScope', '$state', ($rootScope, $state) => { $rootScope.$state = $state; }])
-  .run(() => {
-    if (window.location.host.indexOf('github.io') > -1 && window.location.protocol !== 'http:') {
-      window.location.protocol = 'http';
-    }
-  })
   .name;

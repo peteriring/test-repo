@@ -25,6 +25,11 @@ const config = convict({
     default: 'http://185.13.90.140:8081/',
     env: 'SOCKET_IO_URL',
   },
+  host: {
+    doc: 'host of your site',
+    default: 'https://peteriring.github.io/test-repo/',
+    env: 'VIRTUAL_HOST',
+  },
 });
 
 module.exports = (() => {

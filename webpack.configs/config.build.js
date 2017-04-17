@@ -1,5 +1,8 @@
 const path = require('path');
 const webpack = require('webpack');
+const constants = require('./constants')
+
+const config = constants.getProperties();
 // const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = function build() {
@@ -20,7 +23,7 @@ module.exports = function build() {
     output: {
       // Absolute output directory
       path: path.join(__dirname, '..', 'dist'),
-      publicPath: '/',
+      publicPath: config.host || '/',
       filename: '[name].bundle.js',
       chunkFilename: '[name].bundle.js',
       libraryTarget: 'umd',
