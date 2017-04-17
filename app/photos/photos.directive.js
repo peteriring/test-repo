@@ -1,6 +1,6 @@
 import template from './photos.directive.html';
 
-function extend(data, inner, width, height) {
+function extend(inner, width, height) {
   const style = `left: ${width}px; top: ${-height * (inner.children().length)}px; height: ${height}px; width: ${width}px;`;
   const parent = inner
     .append(`<div class="item" style="${style}">`)
@@ -11,7 +11,7 @@ function extend(data, inner, width, height) {
     .children()
     .last();
   const ctx = canvas[0].getContext('2d');
-  ctx.drawImage(data, 0, 0);
+  return ctx;
 }
 
 
@@ -39,15 +39,14 @@ export function directive($gallery, $timeout) {
       const inner = elem.children().filter(function iter() {
         return angular.element(this).hasClass('carousel-inner');
       });
-      const draw = (data) => {
+      const show = () => {
         $timeout(() => { options.tweening = false; }, 600);
-        if ($gallery.index === inner.children().length) {
-          extend(data, inner, scope.width, scope.height);
-        } else if ($gallery.index > inner.children().length) {
-          $gallery.index = inner.children().length;
-        }
         toggle($gallery.index, elem, scope.width, scope.height);
         if (scope.$root.$$phase !== '$apply' && scope.$root.$$phase !== '$digest') scope.$apply();
+      };
+      const draw = (data, ctx) => {
+        ctx.drawImage(data, 0, 0);
+        show();
       };
 
       const mouse = {};
@@ -68,14 +67,19 @@ export function directive($gallery, $timeout) {
       scope.width = $gallery.width;
       scope.height = $gallery.height;
       scope.next = () => {
-        if (options.tweening) return;
+        if (options.tweening) return null;
         options.tweening = true;
-        $gallery.next(draw);
+        if ((!$gallery.index && $gallery.index !== 0) ||
+          $gallery.index === inner.children().length - 1) {
+          const ctx = extend(inner, scope.width, scope.height);
+          return $gallery.next(data => draw(data, ctx));
+        }
+        return $gallery.next(show);
       };
       scope.prev = () => {
         if (options.tweening) return;
         options.tweening = true;
-        $gallery.prev(draw);
+        $gallery.prev(show);
       };
       scope.$on('$destroy', () => {
         inner.off('dragstart', drag);
