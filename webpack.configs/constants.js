@@ -18,7 +18,7 @@ const config = convict({
       }
     },
     default: 'http://lorempixel.com/',
-    env: 'API_URL',
+    env: 'IMAGE_URL',
   },
   socketIOUrl: {
     doc: 'Path to reach socket.io backend.',
