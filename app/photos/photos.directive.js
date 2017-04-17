@@ -60,6 +60,8 @@ export function directive($gallery, $timeout) {
         return (mouse.x - start.x > 0) ? scope.prev() : scope.next();
       };
 
+      inner.on('swipeleft', scope.next);
+      inner.on('swiperight', scope.prev);
       inner.on('dragstart', drag);
       inner.on('mousemove', move);
       inner.on('dragleave mouseup mouseleave', stop);
@@ -82,6 +84,8 @@ export function directive($gallery, $timeout) {
         $gallery.prev(show);
       };
       scope.$on('$destroy', () => {
+        inner.off('swipeleft', scope.next);
+        inner.off('swiperight', scope.prev);
         inner.off('dragstart', drag);
         inner.off('mousemove', move);
         inner.off('dragleave mouseup mouseleave', stop);
