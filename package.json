@@ -62,7 +62,6 @@
     "lodash": "^3.10.1",
     "matchdep": "^1.0.0",
     "module-alias": "^2.0.0",
-    "moment": "^2.18.1",
     "ng-annotate": "^1.2.1",
     "ng-annotate-webpack-plugin": "^0.1.3",
     "node-libs-browser": "^0.5.3",

@@ -1,6 +1,5 @@
 import * as socket from 'socket.io-client';
 import EventEmitter from 'events';
-import moment from 'moment';
 
 export class NotificationService extends EventEmitter {
   static ID() {
@@ -45,7 +44,7 @@ export class NotificationService extends EventEmitter {
   }
 
   store(data) {
-    data.timestamp = moment();
+    data.timestamp = new Date().getTime();
     this.messages.push(data);
   }
 
