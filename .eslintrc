@@ -1,0 +1,27 @@
+{
+  "extends": "airbnb-base",
+  "rules": {
+    "import/extensions": 0,
+    "import/no-unresolved": 0,
+    "import/no-extraneous-dependencies": 0,
+    "no-param-reassign": 0,
+    "no-implicit-coercion": 1,
+    "import/no-dynamic-require": 0,
+    "global-require": 0,
+    "no-new": 0
+  },
+  "globals": {
+    "document": true,
+    "angular": true,
+    "cordova": true,
+    "self": true,
+    "window": true,
+    "describe": true,
+    "expect": true,
+    "it": true,
+    "inject": true,
+    "beforeEach": true,
+    "localStorage": true,
+    "Image": true
+  }
+}

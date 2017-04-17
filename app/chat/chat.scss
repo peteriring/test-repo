@@ -1,0 +1,70 @@
+$color-me-bg: #337ab7;
+$color-me-text: #ffffff;
+
+$color-you-bg: #f1f0f0;
+$color-you-text: #606369;
+
+body.chat {
+  .gray {
+    color: #ddd;
+    margin-left: 20px;
+  }
+  .panel-body {
+    height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .talk-bubble {
+    margin: 40px;
+    display: inline-block;
+    position: relative;
+    height: auto;
+    border-radius: 30px;
+    -webkit-border-radius: 30px;
+    -moz-border-radius: 30px;
+
+    &:after {
+      content: ' ';
+      position: absolute;
+      width: 0;
+      height: 0;
+      left: auto;
+      right: -20px;
+      top: 25%;
+      bottom: auto;
+      border: 12px solid;
+    }
+    &.pull-right {
+      background-color: $color-me-bg;
+      &:after {
+        right: -20px;
+        border-color: $color-me-bg transparent transparent $color-me-bg;
+      }
+      .talktext {
+        color: $color-me-text;
+      }
+    }
+    &.pull-left {
+      background-color: $color-you-bg;
+      &:after {
+        left: -20px;
+        border-color: $color-you-bg $color-you-bg transparent transparent;
+      }
+      .talktext {
+        color: $color-you-text;
+      }
+    }
+
+    .talktext {
+      padding: 1em;
+      text-align: left;
+      line-height: 1.5em;
+      font-weight: bold;
+      p {
+        -webkit-margin-before: 0em;
+        -webkit-margin-after: 0em;
+        word-wrap: break-word;
+      }
+    }
+  }
+}

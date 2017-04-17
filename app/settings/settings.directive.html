@@ -1,0 +1,12 @@
+<div class="accordion">
+  <div class="row">
+    <div class="list-group" ng-click="click()">
+      <div class="list-group-item list-group-item-info">
+        {{title}}
+        <span ng-if="!show" class="glyphicon glyphicon-chevron-down icon"></span>
+        <span ng-if="show" class="glyphicon glyphicon-chevron-up icon"></span>
+      </div>
+    </div>
+  </div>
+  <div class="accordion-content default" ng-transclude></div>
+</div>

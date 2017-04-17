@@ -1,0 +1,22 @@
+body {
+  .navbar-collapse.show > ul > li:hover {
+    a {
+      color: #555;
+      background-color: #e7e7e7;
+    }
+  }
+  @keyframes blink {
+    50% {
+      background-color: #337ab7;
+    }
+  }
+  @-webkit-keyframes blink {
+    50% {
+      background-color: #337ab7;
+    }
+  }
+  .unread {
+    animation: blink 1s step-start 0s infinite;
+    -webkit-animation: blink 1s step-start 0s infinite;
+  }
+}

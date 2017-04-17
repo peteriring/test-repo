@@ -1,0 +1,20 @@
+body.settings {
+  .panel-body {
+    .icon {
+      float: right;
+    }
+    .accordion-toggle {
+      cursor: pointer;
+    }
+    .accordion-content {
+      input {
+        width: 100%;
+      }
+      display: none;
+      &.default {
+        display: block;
+      }
+    }
+  }
+}
+

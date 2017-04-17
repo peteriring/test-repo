@@ -1,0 +1,45 @@
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        Settings
+      </div>
+      <div class="panel-body">
+        <form>
+          <accordion title="Photo Settings">
+            <div class="list-group">
+              <div class="row list-group-item">
+                <div class="col-md-6">
+                  Width: {{$ctrl.width}}px
+                </div>
+                <div class="col-md-6">
+                  <input type="range" min="90" max="1200" ng-model="$ctrl.width">
+                </div>
+              </div>
+              <div class="row list-group-item">
+                <div class="col-md-6">
+                  Heigth: {{$ctrl.height}}px
+                </div>
+                <div class="col-md-6">
+                  <input type="range" min="60" max="900" ng-model="$ctrl.height">
+                </div>
+              </div>
+            </div>
+          </accordion>
+          <accordion title="Chat Settings">
+            <div class="list-group">
+              <div class="row list-group-item">
+                <div class="col-md-6">
+                  Name: {{$ctrl.nickname}}
+                </div>
+                <div class="col-md-6">
+                  <input ng-model="$ctrl.nickname" ng-model-options="{ debounce: 3100 }" type="text">
+                </div>
+              </div>
+            </div>
+          </accordion>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
