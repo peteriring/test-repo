@@ -1,35 +1,71 @@
 import template from './photos.directive.html';
 
-function extend(inner, elem, width, height) {
-  const w = elem.width();
-  const style = `left: ${w}px; top: ${-height * (inner.children().length)}px; height: ${height}px; width: ${w}px;`;
-  const parent = inner
-    .append(`<div class="item" style="${style}">`)
-    .children()
-    .last();
-  const canvas = parent
-    .append(`<canvas width="${width}" height="${height}">`)
-    .children()
-    .last();
-  const ctx = canvas[0].getContext('2d');
-  return ctx;
-}
+export class SwipeListener {
+  constructor(elem) {
+    this.elem = elem;
+    this.window = angular.element(window);
+    this.left = () => {};
+    this.right = () => {};
+    this.resize = () => {};
+    this.mouse = {};
+    this.before = {};
+  }
 
+  add(name, callback) {
+    this[name] = callback;
+  }
 
-function toggle(active, elem) {
-  const width = elem.width();
-  elem.find('canvas').each(function iter(index) {
-    const parent = angular.element(this).parent();
-    parent.css('width', `${width}px`);
+  register() {
+    this.onStart = e => this.start(e);
+    this.onMove = e => this.move(e);
+    this.onStop = e => this.stop(e);
+    this.onResize = e => this.resize(e);
+    this.window.on('resize', this.onResize);
+    this.elem.on('dragstart touchstart', this.onStart);
+    this.elem.on('mousemove touchmove', this.onMove);
+    this.elem.on('dragleave mouseup mouseleave touchend', this.onStop);
+  }
 
-    if (index < active) {
-      parent.css('left', `${-width}px`);
-    } else if (index > active) {
-      parent.css('left', `${width}px`);
-    } else {
-      parent.css('left', '0px');
-    }
-  });
+  start(event) {
+    event.preventDefault();
+    const { type, clientX, clientY } = event;
+    const pos = {
+      x: (type === 'touchstart') ? event.originalEvent.touches[0].clientX : clientX,
+      y: (type === 'touchstart') ? event.originalEvent.touches[0].clientY : clientY,
+    };
+    this.before.x = pos.x;
+    this.before.y = pos.y;
+    this.before.type = type;
+    this.before.timestamp = new Date().getTime();
+    this.mouse.dragging = true;
+  }
+
+  move(event) {
+    const { type, clientX, clientY } = event;
+    const pos = {
+      x: (type === 'touchmove') ? event.originalEvent.touches[0].clientX : clientX,
+      y: (type === 'touchmove') ? event.originalEvent.touches[0].clientY : clientY,
+    };
+    this.mouse.x = pos.x;
+    this.mouse.y = pos.y;
+  }
+
+  stop() {
+    const { before, mouse, left, right } = this;
+    const threshold = before.type === 'touchstart' ? 150 : 3;
+    const distance = Math.abs(mouse.x - before.x);
+    const elapsed = new Date().getTime() - before.timestamp;
+    if (distance < threshold || elapsed < 100 || !mouse.dragging) return null;
+    this.mouse.dragging = false;
+    return (mouse.x - before.x > 0) ? left() : right();
+  }
+
+  destroy() {
+    this.window.off('resize', this.onResize);
+    this.elem.off('dragstart touchstart', this.onStart);
+    this.elem.off('mousemove touchmove', this.onMove);
+    this.elem.off('dragleave mouseup mouseleave touchend', this.onStop);
+  }
 }
 
 export function directive($gallery, $timeout) {
@@ -38,90 +74,53 @@ export function directive($gallery, $timeout) {
     scope: {},
     restrict: 'E',
     replace: true,
-    link: function link(scope, elem) {
-      const options = {};
-      const win = angular.element(window);
-      const inner = elem.children().filter(function iter() {
+    link: function link($scope, $element) {
+      const { width, height } = $gallery;
+      const $inner = $element.children().filter(function iter() {
         return angular.element(this).hasClass('carousel-inner');
       });
-      const show = () => {
-        $timeout(() => { options.tweening = false; }, 600);
-        toggle($gallery.index, elem);
-        if (scope.$root.$$phase !== '$apply' && scope.$root.$$phase !== '$digest') scope.$apply();
-      };
-      const draw = (data, ctx) => {
-        ctx.drawImage(data, 0, 0);
-        show();
-      };
 
-      const mouse = {};
-      const start = {};
-      const init = (e) => {
-        const { type, clientX, clientY } = e;
-        const pos = {
-          x: (type === 'touchstart') ? e.originalEvent.touches[0].clientX : clientX,
-          y: (type === 'touchstart') ? e.originalEvent.touches[0].clientY : clientY,
+      $scope.next = () => {
+        if ($gallery.tweening) return null;
+        $gallery.tweening = true;
+
+        const { index } = $gallery;
+        const length = $inner.children().length - 1;
+        const callback = () => {
+          $gallery.next();
+          $timeout(() => { $gallery.tweening = false; }, 600);
+          $gallery.toggle($element);
         };
-        start.x = pos.x;
-        start.y = pos.y;
-        start.type = type;
-        start.timestamp = new Date().getTime();
-        mouse.dragging = true;
-      };
-      const move = (e) => {
-        const { type, clientX, clientY } = e;
-        const pos = {
-          x: (type === 'touchmove') ? e.originalEvent.touches[0].clientX : clientX,
-          y: (type === 'touchmove') ? e.originalEvent.touches[0].clientY : clientY,
-        };
-        mouse.x = pos.x;
-        mouse.y = pos.y;
-      };
-      const stop = () => {
-        const threshold = start.type === 'touchstart' ? 150 : 3;
-        const distance = Math.abs(mouse.x - start.x);
-        const elapsed = new Date().getTime() - start.timestamp;
-        if (distance < threshold || elapsed < 200 || !mouse.dragging) return null;
-        mouse.dragging = false;
-        return (mouse.x - start.x > 0) ? scope.prev() : scope.next();
-      };
-      const resize = () => toggle($gallery.index, elem);
 
-      win.on('resize', resize);
-      inner.on('dragstart touchstart', init);
-      inner.on('mousemove touchmove', move);
-      inner.on('dragleave mouseup mouseleave touchend', stop);
+        if ((!index && index !== 0) || index === length) return $gallery.extend($element, callback);
+        return callback();
+      };
+      $scope.prev = () => {
+        if ($gallery.tweening) return;
+        $gallery.tweening = true;
 
-      scope.width = $gallery.width;
-      scope.height = $gallery.height;
-      scope.next = () => {
-        if (options.tweening) return null;
-        options.tweening = true;
-        if ((!$gallery.index && $gallery.index !== 0) ||
-          $gallery.index === inner.children().length - 1) {
-          const ctx = extend(inner, elem, scope.width, scope.height);
-          return $gallery.next(data => draw(data, ctx));
-        }
-        return $gallery.next(show);
+        $gallery.prev();
+        $timeout(() => { $gallery.tweening = false; }, 600);
+        $gallery.toggle($element);
       };
-      scope.prev = () => {
-        if (options.tweening) return;
-        options.tweening = true;
-        $gallery.prev(show);
-      };
-      scope.$on('$destroy', () => {
-        win.off('resize', resize);
-        inner.off('dragstart touchstart', init);
-        inner.off('mousemove touchmove', move);
-        inner.off('dragleave mouseup mouseleave touchend', stop);
+
+      const listener = new SwipeListener($element);
+      listener.add('resize', () => $gallery.toggle($element));
+      listener.add('right', () => $scope.next());
+      listener.add('left', () => $scope.prev());
+      listener.register();
+
+      $scope.$on('$destroy', () => {
+        listener.destroy();
         $gallery.reset();
       });
 
-      scope.next();
-      elem.css('max-height', scope.height);
-      elem.css('max-width', scope.width);
-      inner.css('max-height', scope.height);
-      inner.css('max-width', scope.width);
+      $scope.next();
+
+      $element.css('max-height', height);
+      $element.css('max-width', width);
+      $inner.css('max-height', height);
+      $inner.css('max-width', width);
     },
   };
 }
