@@ -1,7 +1,8 @@
 import template from './photos.directive.html';
 
-function extend(inner, width, height) {
-  const style = `left: ${width}px; top: ${-height * (inner.children().length)}px; height: ${height}px; width: ${width}px;`;
+function extend(inner, elem, width, height) {
+  const w = elem.width();
+  const style = `left: ${w}px; top: ${-height * (inner.children().length)}px; height: ${height}px; width: ${w}px;`;
   const parent = inner
     .append(`<div class="item" style="${style}">`)
     .children()
@@ -15,9 +16,12 @@ function extend(inner, width, height) {
 }
 
 
-function toggle(active, elem, width) {
+function toggle(active, elem) {
+  const width = elem.width();
   elem.find('canvas').each(function iter(index) {
     const parent = angular.element(this).parent();
+    parent.css('width', `${width}px`);
+
     if (index < active) {
       parent.css('left', `${-width}px`);
     } else if (index > active) {
@@ -36,12 +40,13 @@ export function directive($gallery, $timeout) {
     replace: true,
     link: function link(scope, elem) {
       const options = {};
+      const win = angular.element(window);
       const inner = elem.children().filter(function iter() {
         return angular.element(this).hasClass('carousel-inner');
       });
       const show = () => {
         $timeout(() => { options.tweening = false; }, 600);
-        toggle($gallery.index, elem, scope.width, scope.height);
+        toggle($gallery.index, elem);
         if (scope.$root.$$phase !== '$apply' && scope.$root.$$phase !== '$digest') scope.$apply();
       };
       const draw = (data, ctx) => {
@@ -74,7 +79,9 @@ export function directive($gallery, $timeout) {
         mouse.dragging = false;
         return (mouse.x - start.x > 0) ? scope.prev() : scope.next();
       };
+      const resize = () => toggle($gallery.index, elem);
 
+      win.on('resize', resize);
       inner.on('dragstart touchstart', init);
       inner.on('mousemove touchmove', move);
       inner.on('dragleave mouseup mouseleave touchend', stop);
@@ -86,7 +93,7 @@ export function directive($gallery, $timeout) {
         options.tweening = true;
         if ((!$gallery.index && $gallery.index !== 0) ||
           $gallery.index === inner.children().length - 1) {
-          const ctx = extend(inner, scope.width, scope.height);
+          const ctx = extend(inner, elem, scope.width, scope.height);
           return $gallery.next(data => draw(data, ctx));
         }
         return $gallery.next(show);
@@ -97,6 +104,7 @@ export function directive($gallery, $timeout) {
         $gallery.prev(show);
       };
       scope.$on('$destroy', () => {
+        win.off('resize', resize);
         inner.off('dragstart touchstart', init);
         inner.off('mousemove touchmove', move);
         inner.off('dragleave mouseup mouseleave touchend', stop);
