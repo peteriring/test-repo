@@ -57,25 +57,31 @@ export function directive($gallery, $timeout) {
       const mouse = {};
       const start = {};
       const init = (e) => {
+        const { type, clientX, clientY } = e;
         const pos = {
-          x: e.clientX || e.originalEvent.touches[0].clientX,
-          y: e.clientY || e.originalEvent.touches[0].clientY,
+          x: (type === 'touchstart') ? e.originalEvent.touches[0].clientX : clientX,
+          y: (type === 'touchstart') ? e.originalEvent.touches[0].clientY : clientY,
         };
         start.x = pos.x;
         start.y = pos.y;
+        start.type = type;
+        start.timestamp = new Date().getTime();
         mouse.dragging = true;
       };
       const move = (e) => {
+        const { type, clientX, clientY } = e;
         const pos = {
-          x: e.clientX || e.originalEvent.touches[0].clientX,
-          y: e.clientY || e.originalEvent.touches[0].clientY,
+          x: (type === 'touchmove') ? e.originalEvent.touches[0].clientX : clientX,
+          y: (type === 'touchmove') ? e.originalEvent.touches[0].clientY : clientY,
         };
         mouse.x = pos.x;
         mouse.y = pos.y;
       };
       const stop = () => {
-        const distance = ((mouse.x - start.x) ** 2) + ((mouse.y - start.y) ** 2);
-        if (distance < 9 || !mouse.dragging) return null;
+        const threshold = start.type === 'touchstart' ? 150 : 3;
+        const distance = Math.abs(mouse.x - start.x);
+        const elapsed = new Date().getTime() - start.timestamp;
+        if (distance < threshold || elapsed < 200 || !mouse.dragging) return null;
         mouse.dragging = false;
         return (mouse.x - start.x > 0) ? scope.prev() : scope.next();
       };
